@@ -3,6 +3,10 @@
 
 #include <iostream>
 #include <vector>
+#include "ListNode.h"
+#include <queue>
+#include <sstream>
+#include <stack>
 
 void count_ones()
 {
@@ -245,16 +249,369 @@ int check_sudoku()
     return 1;
 }
 
+//7.5
+bool is_palandrome_sentence_2(std::string text)
+{
+
+    std::string text_cleaned;
+    
+    for (int i = 0; i < text.size(); ++i)
+    {
+        if (isalpha(text[i]))
+        {
+            text_cleaned = text_cleaned + static_cast<char>(std::tolower(text[i]));
+        }
+    }
+    
+    int start = 0;
+    int end = text_cleaned.length() - 1;
+    for (int i = 0; i < text_cleaned.length()/2; ++i)
+    {
+        char a = text_cleaned[start++];
+        char b = text_cleaned[end--];
+        if ( a != b) return false;
+    }
+    return true;
+}
+
+//7.5
+bool is_palandrome_sentence(std::string text)
+{
+    int start = 0;
+    int end = text.length() - 1;
+    for (int i = 0; i < text.length() / 2; ++i)
+    {
+        while (!isalpha(text[start]) && start < end) { ++start; };  // while has a risk to run longer than expected
+        while (!isalpha(text[end]) && start < end) { --end;};
+        char a = static_cast<char> (std::tolower(text[start++]));
+        char b = static_cast<char> (std::tolower(text[end--]));
+        if (a != b) return false;
+    }
+    return true;
+}
+
+
+//7.6
+std::string reverse_words_in_sentence(const std::string& sentence)
+{
+    std::string new_string;
+
+    int end_word_idx = sentence.size() - 1;
+    int begin_word_idx = end_word_idx;
+    int sentence_idx = end_word_idx;
+
+    while (begin_word_idx >= 0 )
+    {
+        while (sentence_idx > 0 && isalpha(sentence[--sentence_idx]))
+        {
+            begin_word_idx--;
+        }
+        std::string sub = sentence.substr(begin_word_idx, end_word_idx - begin_word_idx + 1);
+        new_string.append(sub);
+        new_string.append(" ");
+        // set all indices to the last letter
+        sentence_idx--;
+        begin_word_idx = sentence_idx;
+        end_word_idx = sentence_idx;
+    }
+    return new_string;
+}
+
+//8.5
+void overlapping_list()
+{
+    //create list
+    std::shared_ptr<Node> n1{ new Node(1) };
+    auto n2 = std::make_shared<Node>(2);
+    n1->SetNext(n2);
+    auto n3 = std::make_shared<Node>(2);
+    n1->GetNext()->SetNext(n3);
+    auto n4 = std::make_shared<Node>(4);
+    n1->GetNext()->GetNext()->SetNext(n4);
+
+    std::shared_ptr<Node> n_it{ n1 };
+    while (n_it->GetNext())
+    {
+        if (n_it->GetValue() == n_it->GetNext()->GetValue())
+        {
+            std::shared_ptr<Node> temp{ n_it->GetNext()->GetNext() };            
+            n_it->SetNext(temp);
+        }
+        std::cout << n_it->GetValue() << std::endl;
+        n_it = n_it->GetNext();
+    }
+
+    n_it = n1;
+    while (n_it)
+    {
+        std::cout << n_it->GetValue() << std::endl;
+        n_it = n_it->GetNext();
+    }
+}
+
+//8.7
+void remove_kth_last_element_from_list(int kth_last_element)
+{
+    //create list
+    std::shared_ptr<Node> first_node{ new Node(0) };
+    std::shared_ptr<Node> prev;
+    prev = first_node;
+    for (int i = 1; i < 10; ++i)
+    {
+        std::shared_ptr<Node> n{ new Node(i) };
+        prev->SetNext(n);
+        prev = n;
+    }
+
+    //move two pointers in kth_last_element distance
+    std::shared_ptr<Node> ptr_ahead;
+    std::shared_ptr<Node> ptr_behind;
+    ptr_ahead = first_node;
+    for (int i = 0; i < kth_last_element+1; ++i)
+    {
+        ptr_ahead = ptr_ahead->GetNext();
+    }
+
+    ptr_behind = first_node;
+    while (ptr_ahead)
+    {
+        ptr_ahead = ptr_ahead->GetNext();
+        ptr_behind = ptr_behind->GetNext();
+    }
+
+    std::cout << "ptr_behind - value: " << ptr_behind->GetValue() << std::endl;
+    std::shared_ptr<Node> new_next = ptr_behind->GetNext()->GetNext();
+    ptr_behind->SetNext(new_next);
+
+    std::shared_ptr<Node> n_it;
+    n_it = first_node;
+    while (n_it)
+    {
+        std::cout << n_it->GetValue() << std::endl;
+        n_it = n_it->GetNext();
+    }
+}
+
+// 9.2
+int eval_rpn(std::string& rpn)
+{
+    std::queue<std::string> buffer;
+    //extraxt digits/operators
+    std::stringstream substr;
+    for (int i = 0; i < rpn.size(); ++i)
+    {
+        if (rpn[i] == ',')
+        {
+            buffer.push(substr.str());
+            substr.str("");
+        }
+        else
+        {
+            substr << rpn[i];
+        }        
+    }
+    buffer.push(substr.str());
+
+    int result = 0;
+    std::queue<int> buffer_num;
+    while (!buffer.empty())
+    {
+        std::string ch = buffer.front();
+        if (ch == "+")
+        {
+            int temp = 0;
+            while (!buffer_num.empty())
+            {
+                temp += buffer_num.front();
+                buffer_num.pop();
+            }
+            result += temp;
+        }
+        else if (ch == "*")
+        {
+            int temp = 1;
+            while (!buffer_num.empty())
+            {
+                temp *= buffer_num.front();
+                buffer_num.pop();
+            }
+            result *= temp;
+        }
+        else
+        {
+            buffer_num.push(stoi(ch));
+        }
+        buffer.pop();
+    }
+/*
+    while(!buffer.empty())
+    {        
+        std::cout << buffer.front() << std::endl;
+        buffer.pop();
+    }
+    */
+    return result;
+}
+
+// 9.2
+int eval_rpn_2(std::string& rpn)
+{
+    std::stringstream ss(rpn);
+    std::string token;
+    std::stack<int> buffer_num;
+    while (std::getline(ss, token, ','))
+    {
+        std::string ch = token;
+        if (ch == "+")
+        {
+            int x = buffer_num.top();
+            buffer_num.pop();
+            int y = buffer_num.top();
+            buffer_num.pop();
+            buffer_num.push(x + y);
+
+        }
+        else if (ch == "*")
+        {
+            int x = buffer_num.top();
+            buffer_num.pop();
+            int y = buffer_num.top();
+            buffer_num.pop();
+            buffer_num.push(x * y);
+        }
+        else
+        {
+            buffer_num.push(stoi(ch));
+        }
+    }
+    return buffer_num.top();
+}
+
+void queue_vs_stack()
+{
+    std::queue<int> q;  //FIFO
+    for (int i = 0; i < 5; ++i) q.push(i);
+    std::cout << q.front() << std::endl;
+    q.pop();
+    std::cout << q.front() << std::endl;
+
+    std::cout << "-----" << std::endl;
+    std::stack<int> s; //LIFO
+    for (int i = 0; i < 5; ++i) s.push(i);
+    std::cout << s.top() << std::endl;
+    s.pop();
+    std::cout << s.top() << std::endl;
+}
+
+class MyQueue
+{
+public:
+    MyQueue(int size) {
+        queue.resize(size);
+    }
+
+    void enqueue(int elem)
+    {                
+        if (size == queue.size())
+        {
+            std::cout << "Resizing " << std::endl;
+            std::rotate(queue.begin(), queue.begin() + front, queue.end());
+            front = 0;
+            rear = size;
+            queue.resize(queue.size() * 2);
+        }
+        size++;
+        queue[rear] = elem;
+        rear = (rear + 1) % queue.size();
+    }
+
+    int dequeue()
+    {
+        if (size == 0)
+        {
+            std::cout << "empty" << std::endl;
+        }
+        size--;
+        int val = queue[front];
+        front = (front + 1) % queue.size();
+        return val;        
+    }
+
+    void print()
+    {
+        int front_temp = front;
+        for (int i = 0; i < size; ++i)
+        {
+            std::cout << queue[front_temp] << std::endl;
+            front_temp = (front_temp + 1) % queue.size();
+        }
+    }
+
+private:
+    std::vector<int> queue;
+    int rear = 0;
+    int front = 0;
+    int size = 0;
+};
+
+void use_queue()
+{
+    MyQueue Q(3);
+    Q.enqueue(3);
+    Q.enqueue(4);
+    Q.enqueue(5);
+    Q.print();
+    Q.enqueue(6);
+    Q.print();
+    std::cout << "deqeued: " << Q.dequeue() << std::endl;
+    Q.print();
+    Q.enqueue(7);
+    Q.enqueue(8);
+    Q.print();
+
+}
 
 int main()
 {
     //std::cout << is_palindrome_2(123) << "\n";
     //std::cout << is_palindrome_2(121) << "\n";
     // std::cout << random_with_2_headed_coin(6) << "\n";
-    std::cout << check_sudoku() << "\n";
+    //std::cout << check_sudoku() << "\n";
+
+ //   std::string text = { "a bcB7a" };
+ //   std::cout << is_palandrome_sentence(text) << "\n";
 
  //   bool b[3] = { false, false, false };
  //   b[1] = true;
  //   std::cout << b[1] << "\n";
 
+//    int index1 = 3;
+//    int index2 = 3;
+//    std::string str1{ "a_string1" };
+//    std::string str2{ "a_string2" };
+//    std::cout << "str1: " << str1[index1++] << "\n";
+//    std::cout << "str2: " << str2[++index2] << "\n";
+
+
+//    std::cout << reverse_words_in_sentence("this is a sentence") << "\n";
+
+//    overlapping_list();
+//    std::cout << overlapping_list() << "\n";
+//    remove_kth_last_element_from_list(3);
+
+    /*
+    std::string rpn("2,2,+,3,*");
+    std::cout<< eval_rpn_2(rpn) << std::endl;
+    std::string rpn_1("2,2,+,3,3,*,*"); // (2 + 2) * (3 * 3)
+    std::cout << eval_rpn_2(rpn_1) << std::endl;
+    std::string rpn_2("123");
+    std::cout << eval_rpn_2(rpn_2) << std::endl;
+    std::string rpn_3("3,3,3,+,+");
+    std::cout << eval_rpn_2(rpn_3) << std::endl;
+    
+    std::cout << std::endl << std::endl;
+    
+    queue_vs_stack();
+    */
+    use_queue();
 }
