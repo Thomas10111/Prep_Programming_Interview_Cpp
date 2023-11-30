@@ -5,7 +5,7 @@ class Pizza
 {
 public:
     Pizza() = default;
-     ~Pizza() { std::cout << "Pizza - Destructor" << std::endl; };
+    virtual ~Pizza() { std::cout << "Pizza - Destructor" << std::endl; }; // if not virtual the destructor of the derived class is not called
     virtual void prepare() = 0;
     virtual void bake() = 0;
 };
@@ -41,7 +41,6 @@ public:
     Pizza* createPizza() override {
         return new NYStylePizza();
     };
-
 };
 
 
